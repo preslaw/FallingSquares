@@ -1,0 +1,137 @@
+import pygame
+import random
+
+pygame.init()
+screenSize= (500,500)
+win = pygame.display.set_mode((screenSize))
+
+GREEN = [0,255 ,0]
+RED = [255,0,0]
+BLUE = [0,0,255]
+ORANGE = [255,128,0]
+MIX = [50,255,255]
+WHITE = [255,255,255]
+
+heroShip = pygame.image.load(r'S:\USERS\mbi\ZAKUPY\Robkat\PY\Space Inv\heroShip.jpg')
+
+run = True
+
+class Kwadrat:
+    pozycjaX = 0
+    pozycjaY =0
+
+    def __init__(self):
+        self.posX = Kwadrat.pozycjaX
+        self.posY = Kwadrat.pozycjaY
+        self.posYInit = self.posY
+        if (Kwadrat.pozycjaX+30)<=500:
+            Kwadrat.pozycjaX += 40
+        else:
+            Kwadrat.pozycjaY += 40
+            Kwadrat.pozycjaX = 0
+        self.lenX = 20
+        self.lenY = 20
+        self.squareColor = random.choice([RED,GREEN,BLUE])
+        self.squareColorInit = self.squareColor
+        self.squareObject = (self.posX,self.posY,self.lenX,self.lenY)
+
+    def applyDiffColor(self,color):
+        self.squareColor = color
+
+    def moveDown(self):
+        global kwadratFall
+        #global removeKwadrat
+        self.posY+=10
+        if self.posY>530:
+            self.posY=0
+        if (self.posY == self.posYInit):
+            self.squareColor = self.squareColorInit
+            kwadratFall = False
+        self.squareObject = (self.posX, self.posY, self.lenX, self.lenY)
+
+
+    def draw(self):
+        #pygame.draw.rect(win, self.squareColor, (self.posX,self.posY, self.lenX, self.lenY))
+        pygame.draw.rect(win, self.squareColor, self.squareObject)
+
+class Hero (Kwadrat):
+
+    def __init__(self):
+        self.heroPosX = 250
+        self.heroPosY = 470
+        self.heroLenX = 20
+        self.heroLenY = 20
+        self.heroColor = ORANGE
+        self.heroColorInit = self.heroColor
+        self.heroMovePixels =20
+        #self.heroSquare = pygame.Rect(self.heroPosX,self.heroPosY,self.heroLenX,self.heroLenY)
+        self.heroSquare = pygame.Rect(self.heroPosX, self.heroPosY, self.heroLenX, self.heroLenY)
+
+    def drawHero(self):
+        #pygame.draw.rect(win, self.heroColor, (self.heroPosX, self.heroPosY, self.heroLenX, self.heroLenY))
+        pygame.draw.rect(win, self.heroColor, self.heroSquare)
+
+    def heroMoveLeft(self):
+        if self.heroPosX >0:
+            self.heroPosX -= self.heroMovePixels
+            self.heroSquare = pygame.Rect(self.heroPosX, self.heroPosY, self.heroLenX, self.heroLenY)
+
+
+    def heroMoveRight(self):
+        if self.heroPosX <480:
+            self.heroPosX += self.heroMovePixels
+            self.heroSquare = pygame.Rect(self.heroPosX, self.heroPosY, self.heroLenX, self.heroLenY)
+
+
+
+kwadraty = []
+for a in range(39):
+    z =  Kwadrat()
+    kwadraty+=[z]
+
+hero = Hero()
+
+kwadratFall = False
+
+removeKwadrat = False
+squareColidedHero = False
+while run:
+    win.fill((0, 0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+    # obsługa zdarzeń
+    if kwadratFall == False and len(kwadraty)>0:
+        kwadratChosen = random.choice(kwadraty)
+        kwadratChosen.applyDiffColor(MIX)
+        kwadratFall= True
+    kwadratChosen.moveDown()
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] :
+        hero.heroMoveLeft()
+
+    if keys[pygame.K_RIGHT] :
+        hero.heroMoveRight()
+
+    for a in kwadraty:
+        a.draw()
+
+    hero.drawHero()
+
+    if hero.heroSquare.colliderect(kwadratChosen.squareObject):
+        squareColidedHero = True
+        colideCount = 10
+
+    if squareColidedHero:
+        hero.applyDiffColor(WHITE)
+        kwadratChosen.applyDiffColor(WHITE)
+        colideCount -=1
+        if colideCount ==0:
+            kwadratChosen.squareColor = kwadratChosen.squareColorInit
+            hero.heroColor = hero.heroColorInit
+            squareColidedHero = False
+
+    pygame.time.delay(50)
+
+    pygame.display.update()
